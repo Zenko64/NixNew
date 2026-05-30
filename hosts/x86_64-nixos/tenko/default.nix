@@ -1,7 +1,7 @@
 { inputs, pkgs, ... }:
 {
   imports = [
-    inputs.mt7927.nixosModules.default
+   # inputs.mt7927.nixosModules.default
     ./hardware-configuration.nix
     ./gpu.nix
     ./networks.nix
@@ -30,45 +30,45 @@
     sortKey = "00";
   };
 
-  hardware.mediatek-mt7927 = {
-    enable = true;
-    enableWifi = true;
-    enableBluetooth = true;
-    # Required to fix upload speed issues on MT7927.
-    disableAspm = true;
-  };
+  #hardware.mediatek-mt7927 = {
+  #  enable = true;
+  #  enableWifi = true;
+  #  enableBluetooth = true;
+  #  # Required to fix upload speed issues on MT7927.
+  #  disableAspm = true;
+  #};
 
-  main = {
-    desktops.hyprland = {
-      enable = true;
-      settings = {
-        input = {
-          kb_layout = "us";
-          kb_variant = "intl";
-        };
-        device = [
-          {
-            name = "compx-atk-a9-ultra-1";
-            accel_profile = "flat";
-            sensitivity = -0.25;
-          }
-          {
-            name = "compx-atk-mouse-8k-dongle-mouse";
-            accel_profile = "flat";
-            sensitivity = -0.25;
-          }
-        ];
-      };
-    };
-
-    greeter = "greetd";
-    desktop.theme = "catppuccin-mocha";
-    users.simi = {
-      fullName = "Zenko";
-      email = "simi.git@outlook.com";
-      shell = "fish";
-    };
-  };
+  #main = {
+  #  desktops.hyprland = {
+  #    enable = true;
+  #    settings = {
+  #      input = {
+  #        kb_layout = "us";
+  #        kb_variant = "intl";
+  #      };
+  #      device = [
+  #        {
+  #          name = "compx-atk-a9-ultra-1";
+  #          accel_profile = "flat";
+  #          sensitivity = -0.25;
+  #        }
+  #        {
+  #          name = "compx-atk-mouse-8k-dongle-mouse";
+  #          accel_profile = "flat";
+  #          sensitivity = -0.25;
+  #        }
+  #      ];
+  #    };
+  #  };
+#
+  #  greeter = "greetd";
+  #  desktop.theme = "catppuccin-mocha";
+  #  users.simi = {
+  #    fullName = "Zenko";
+  #    email = "simi.git@outlook.com";
+  #    shell = "fish";
+  #  };
+  #};
 
   programs.steam.enable = true;
   services.flatpak.enable = true;

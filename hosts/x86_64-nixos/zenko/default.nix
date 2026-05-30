@@ -30,30 +30,30 @@
     sortKey = "00";
   };
 
-  main = {
-    desktops.hyprland = {
-      enable = true;
-      settings = {
-        input = {
-          kb_layout = "pt";
-        };
-        device = [
-          {
-            name = "foca0001:00-2808:0106-touchpad";
-            natural_scroll = true;
-          }
-        ];
-      };
-    };
-
-    greeter = "greetd";
-    desktop.theme = "catppuccin-mocha";
-    users.simi = {
-      fullName = "Zenko";
-      email = "simi.git@outlook.com";
-      shell = "fish";
-    };
-  };
+  #main = {
+  #  desktops.hyprland = {
+  #    enable = true;
+  #    settings = {
+  #      input = {
+  #        kb_layout = "pt";
+  #      };
+  #      device = [
+  #        {
+  #          name = "foca0001:00-2808:0106-touchpad";
+  #          natural_scroll = true;
+  #        }
+  #      ];
+  #    };
+  #  };
+#
+  #  greeter = "greetd";
+  #  desktop.theme = "catppuccin-mocha";
+  #  users.simi = {
+  #    fullName = "Zenko";
+  #    email = "simi.git@outlook.com";
+  #    shell = "fish";
+  #  };
+  #};
 
   programs.steam.enable = true;
   services.flatpak.enable = true;

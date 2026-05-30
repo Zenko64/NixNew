@@ -25,7 +25,7 @@
       debug = true;
       systems = [ "x86_64-linux" ];
       imports = [
-        (import-tree ./lib)
+        # (import-tree ./lib)
         (import-tree ./modules)
         inputs.easy-hosts.flakeModule
       ];
@@ -44,7 +44,20 @@
             buildInputs = [
               pkgs.nixd
               pkgs.nixfmt
+
+              # Testing Machine In Lab
+              pkgs.nixos-anywhere
+              pkgs.pixiecore
             ];
+
+            shellHook = ''
+              alias netdev='sudo pixiecore boot ${inputs.self.nixosConfigurations.installer.config.system.build.kernel}/bzImage ${inputs.self.nixosConfigurations.installer.config.system.build.netbootRamdisk}/initrd --cmdline "init=${inputs.self.nixosConfigurations.installer.config.system.build.toplevel}/init"'
+
+              echo "-----Zenko64's NixOS Development Shell-----"
+              echo "Aliases:"
+              echo " - netdev: Start Installer PXEServer with OpenSSH Enabled."
+              echo "-------------------------------------------"
+            '';
           };
         };
     };
