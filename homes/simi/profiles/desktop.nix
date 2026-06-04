@@ -4,7 +4,7 @@
   ...
 }:
 {
-  local.desktop.theme = "tokyo-night-light";
+  local.desktop.theme = "catppuccin-frappe";
 
   stylix = {
     image = ../wallpapers/Koi.png;
