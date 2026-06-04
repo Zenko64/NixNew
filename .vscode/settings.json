@@ -1,4 +1,7 @@
 {
+  "[nix]": {
+    "editor.defaultFormatter": "jnoortheen.nix-ide"
+  },
   "nix.enableLanguageServer": true,
   "nix.serverPath": "nixd",
   "nix.serverSettings": {
@@ -8,11 +11,12 @@
           "nixfmt"
         ]
       },
+
+      // Change (...nixosConfigurations.<host>.options) to your host for autoCompletions to work!
       "options": {
         "nixos": {
           "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.zenko.options"
-        },
-        // Pull Flake-Parts Options
+        },        
         "flake-parts": {
           "expr": "(builtins.getFlake (builtins.toString ./.)).debug.options"
         }

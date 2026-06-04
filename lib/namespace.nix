@@ -1,7 +1,9 @@
-{lib, ...}: {
+# Custom Module Namespace
+{ lib, ... }:
+{
   options.namespace = lib.mkOption {
     type = lib.types.str;
     default = "local";
-    description = "The Namespace For The Framework's Custom Modules.";
+    description = "Namespace that holds all module options.";
   };
 }

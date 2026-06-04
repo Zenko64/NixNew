@@ -1,24 +1,19 @@
-# Networks Configurations
-# Declaratively Manage Networks, or add other setup such as VPN
+# Networks Configuration
 { config, ... }:
 {
-
-  # Taken from NixOS Tailscale Wiki
   services.tailscale.enable = true;
+
   networking.firewall = {
     trustedInterfaces = [ "tailscale0" ];
-    # Allow the Tailscale UDP port through the firewall
     allowedUDPPorts = [ config.services.tailscale.port ];
   };
 
-  # 2. Force tailscaled to use nftables (Critical for clean nftables-only systems)
-  # This avoids the "iptables-compat" translation layer issues.
+  # Force Tailscale to use NFTables.
   systemd.services.tailscaled.serviceConfig.Environment = [
     "TS_DEBUG_FIREWALL_MODE=nftables"
   ];
 
-  # 3. Optimization: Prevent systemd from waiting for network online
-  # (Optional but recommended for faster boot with VPNs)
+  # Don't block boot on Network Connectivity.
   systemd.network.wait-online.enable = false;
   boot.initrd.systemd.network.wait-online.enable = false;
 }

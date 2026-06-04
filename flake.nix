@@ -2,22 +2,29 @@
   description = "My Custom NixOS Configuration.";
 
   inputs = {
+    # System
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    disko.url = "github:nix-community/disko";
+
+    # Frameworks
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:denful/import-tree";
     easy-hosts.url = "github:tgirlcloud/easy-hosts";
-
-    disko.url = "github:nix-community/disko";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Theming
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   outputs =
     inputs@{
-      nixpkgs,
       flake-parts,
       import-tree,
       ...
@@ -25,32 +32,49 @@
     flake-parts.lib.mkFlake { inherit inputs; } (
       { config, ... }:
       {
+        # ! Do NOT Disable This!
+        # Disabling This Will Break Auto-completion, and therefore making it unnecessarily more difficult to use this.
         debug = true;
-        systems = [ "x86_64-linux" ];
 
-        # You can set this to whatever you want.
-        # Local is the default everwhere.
-        # All Framework Modules Are Under This Namespace.
+        # Namespace that holds every injected module options
         namespace = "local";
 
+        # Supported architectures
+        systems = [ "x86_64-linux" ];
+
+        # Flake Modules To Import (Flake-Parts only)
         imports = [
-          inputs.flake-parts.flakeModules.modules
-          (import-tree ./modules)
-          (import-tree ./lib)
-          inputs.easy-hosts.flakeModule
           inputs.disko.flakeModule
+          inputs.easy-hosts.flakeModule
+          inputs.flake-parts.flakeModules.modules
+          inputs.home-manager.flakeModules.home-manager
+          (import-tree ./lib)
+
+          # Inject all the modules in the dirtree into flake-parts
+          (import-tree ./modules)
         ];
 
         easy-hosts = {
           path = ./hosts;
           autoConstruct = true;
-          shared.modules = [
-            config.flake.modules.nixos.core
-          ];
+          shared = {
+            modules = [
+              # Loads modules that can either bring behavior, or options that cause behavior.
+              # Core Modules
+              inputs.disko.nixosModules.disko
+              config.flake.modules.nixos.core
+              config.flake.modules.nixos.desktop
+
+              # Theming
+              inputs.catppuccin.nixosModules.catppuccin
+            ];
+            specialArgs = {
+              inherit inputs;
+              namespace = config.namespace;
+            };
+          };
         };
 
-        # Development Shell For The Configuration
-        # Start with "nix develop"
         perSystem =
           { pkgs, ... }:
           let
@@ -62,86 +86,19 @@
                 pkgs.nixd
                 pkgs.nixfmt
 
-                # Testing Machine In Lab
+                # Lab testing machine
+                pkgs.dnsmasq
                 pkgs.nixos-anywhere
                 pkgs.pixiecore
-                pkgs.dnsmasq
 
-                # Function "writeShellScriptBin", arg1: Script FileName, arg2: Script Content
-                # This script starts the Pixiecore server to boot the OS in a debuggee machine in labs.
-                (pkgs.writeShellScriptBin "netdev" ''
-                  # This cleans up background processes when the script exits to avoid port conflicts.
-                  cleanup() {
-                    kill "$DNSMASQ_PID" "$PIXIECORE_PID" 2>/dev/null || true
-                    wait "$DNSMASQ_PID" "$PIXIECORE_PID" 2>/dev/null || true
-                      sudo iptables -t nat -D POSTROUTING -o $GATEWAY -j MASQUERADE 2>/dev/null || true
-                      sudo iptables -D FORWARD -i $INTERNAL -o $GATEWAY -j ACCEPT 2>/dev/null || true
-                      sudo iptables -D FORWARD -i $GATEWAY -o $INTERNAL -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || true
-                      sudo ip addr del 10.0.0.1/24 dev $INTERNAL 2>/dev/null || true 
-                  }
-                  trap cleanup EXIT # Runs Cleanup On Exit Signal
-
-                  if [[ $1 == "" ]]; then
-                    echo "Usage: netdev <iface> <gatewayIface>"
-                    exit 1
-                  fi
-
-                  INTERNAL=$1
-                  GATEWAY=$2
-
-                  # Extract the IP Address of the selected interface
-                  IFACEIP=$(ip addr show $INTERNAL | grep -oP 'inet \K[\d.]+' | head -1)
-                  IFACESTATE=$(ip link show $INTERNAL | awk '{print $9}')
-
-                  if [[ $IFACESTATE == "" ]]; then
-                    echo "Could not determine the state of the interface."
-                    exit 1
-                  fi
-
-                  if [[ $IFACESTATE != "UP" || $IFACEIP == "" ]]; then
-                    sudo ip link set $INTERNAL up
-                    sudo ip addr add 10.0.0.1/24 dev $INTERNAL
-                    IFACEIP=$(ip addr show $INTERNAL | grep -oP 'inet \K[\d.]+' | head -1)
-                    sleep 1.5
-                  fi
-
-                  sudo sysctl -w net.ipv4.ip_forward=1
-                  if [[ $GATEWAY == "" ]]; then
-                    GATEWAY=$(sudo ip route show default | awk '{print $5}')
-                  fi
-                  sudo iptables -t nat -A POSTROUTING -o $GATEWAY -j MASQUERADE
-                  sudo iptables -A FORWARD -i $INTERNAL -o $GATEWAY -j ACCEPT
-                  sudo iptables -A FORWARD -i $GATEWAY -o $INTERNAL -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-
-                  if ! ping -4 -I $GATEWAY 1.1.1.1 -c 1 > /dev/null 2>&1; then
-                    echo "Gateway Iface $GATEWAY does not have internet access.\nPlease ensure the gateway interface has internet access."
-                    exit 1
-                  fi
-
-                  shift 2
-
-                  # DNSMasq DHCP Server Assigns IP Addresses To The Debuggees
-                  sudo ${pkgs.dnsmasq}/bin/dnsmasq \
-                    -i $INTERNAL \
-                    --bind-interfaces \
-                    --dhcp-range 10.0.0.2,10.0.0.254,24h \
-                    --dhcp-option=option:router,$IFACEIP \
-                    --dhcp-option=option:dns-server,1.1.1.1,8.8.8.8 \
-                    --no-resolv \
-                    --no-hosts \
-                    --no-daemon &
-                  DNSMASQ_PID=$!
-
-                  # Pixiecore Boots The Debuggees
+                # Starts Pixiecore to netboot a debuggee on the same network.
+                # Requires a DHCP server and internet on the LAN.
+                (pkgs.writeShellScriptBin "netboot" ''
                   sudo ${pkgs.pixiecore}/bin/pixiecore \
                     boot ${installer.kernel}/bzImage ${installer.netbootRamdisk}/initrd \
                     --cmdline "init=${installer.toplevel}/init loglevel=4" --debug \
                     --dhcp-no-bind \
-                    --port 64172 --status-port 64172 "$@" &
-                  PIXIECORE_PID=$!
-
-                  wait "$DNSMASQ_PID" "$PIXIECORE_PID"
+                    --port 64172 --status-port 64172 "$@"
                 '')
               ];
             };
