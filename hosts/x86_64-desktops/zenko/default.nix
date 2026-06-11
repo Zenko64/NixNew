@@ -18,6 +18,8 @@
         shell = "ashell";
       };
       environments.niri.enable = true;
+      environments.gnome.enable = true;
+      environments.kde.enable = true;
       greeter = "tuigreet";
     };
   };
