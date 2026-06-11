@@ -9,6 +9,7 @@ in
 {
   flake.modules.nixos.desktop =
     {
+      inputs,
       config,
       lib,
       pkgs,
@@ -34,16 +35,18 @@ in
           enable = true;
           withUWSM = true;
           # This is to use only with UWSM
-          package = pkgs.hyprland.overrideAttrs (prev: {
-            # Extend the post-install script to remove what we don't need to ensure a good UX
-            # Deletes Non-UWSM Hyprland, Renames Desktop-Name Hyprland branding to just Hyprland.
-            postInstall = (prev.postInstall or "") + ''
-              rm $out/share/wayland-sessions/hyprland.desktop
-              sed -i 's/Name=Hyprland (uwsm-managed)/Name=Hyprland/' $out/share/wayland-sessions/hyprland-uwsm.desktop
-              sed -i "s|start -e -D Hyprland hyprland.desktop|start -e -D Hyprland -- $out/bin/hyprland|" $out/share/wayland-sessions/hyprland-uwsm.desktop
-            '';
-            passthru.providedSessions = [ "hyprland-uwsm" ];
-          });
+          package =
+            inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland.overrideAttrs
+              (prev: {
+                # Extend the post-install script to remove what we don't need to ensure a good UX
+                # Deletes Non-UWSM Hyprland, Renames Desktop-Name Hyprland branding to just Hyprland.
+                postInstall = (prev.postInstall or "") + ''
+                  rm $out/share/wayland-sessions/hyprland.desktop
+                  sed -i 's/Name=Hyprland (uwsm-managed)/Name=Hyprland/' $out/share/wayland-sessions/hyprland-uwsm.desktop
+                  sed -i "s|start -e -D Hyprland hyprland.desktop|start -e -D Hyprland -- $out/bin/start-hyprland|" $out/share/wayland-sessions/hyprland-uwsm.desktop
+                '';
+                passthru.providedSessions = [ "hyprland-uwsm" ];
+              });
         };
       };
     };
@@ -103,7 +106,7 @@ in
             };
           };
         };
-        systemd.user.services.hypridle = lib.mkForce {};
+        systemd.user.services.hypridle = lib.mkForce { };
 
         programs = {
           hyprlock = {

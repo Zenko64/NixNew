@@ -25,6 +25,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Desktops
+    hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
+
     # Theming
     stylix = {
       url = "github:nix-community/stylix";
