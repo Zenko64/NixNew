@@ -17,7 +17,7 @@ in
       ...
     }:
     {
-      options.${namespace}.desktop.environments.hyprland = {
+      options.${namespace}.desktop.compositors.hyprland = {
         enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
@@ -30,7 +30,7 @@ in
         };
       };
 
-      config = lib.mkIf config.${namespace}.desktop.environments.hyprland.enable {
+      config = lib.mkIf config.${namespace}.desktop.compositors.hyprland.enable {
         programs.hyprland = {
           enable = true;
           withUWSM = true;
@@ -61,15 +61,15 @@ in
       ...
     }:
     {
-      options.${namespace}.desktop.environments.hyprland = {
+      options.${namespace}.desktop.compositors.hyprland = {
         shell = lib.mkOption {
           type = lib.types.nullOr (lib.types.enum shells);
-          default = osConfig.${namespace}.desktop.environments.hyprland.shell;
+          default = osConfig.${namespace}.desktop.compositors.hyprland.shell;
           description = "Hyprland Shell To Use.";
         };
       };
 
-      config = lib.mkIf osConfig.${namespace}.desktop.environments.hyprland.enable {
+      config = lib.mkIf osConfig.${namespace}.desktop.compositors.hyprland.enable {
         home.packages = with pkgs; [
           hyprpaper
           hypridle
@@ -347,12 +347,19 @@ in
               "$mainMod, mouse:272, movewindow"
               "$mainMod, mouse:273, resizewindow"
             ];
+
+            layerrule = [
+              "blur on, match:namespace notifications"
+              "ignore_alpha 0, match:namespace notifications"
+            ];
+
+            source = [
+              "~/.config/hypr/monitors.conf"
+              "~/.config/hypr/workspaces.conf"
+            ];
           };
 
           extraConfig = ''
-            source = ~/.config/hypr/monitors.conf
-            source = ~/.config/hypr/workspaces.conf
-
             windowrule {
                 name = suppress-maximize-events
                 match:class = .*
@@ -369,9 +376,6 @@ in
                 match:pin = false
                 no_focus = true
             }
-
-            layerrule = blur on, match:namespace notifications
-            layerrule = ignore_alpha 0, match:namespace notifications
           '';
         };
       };

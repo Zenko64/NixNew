@@ -13,13 +13,10 @@
   local = {
     desktop = {
       theme = "catppuccin-mocha";
-      environments.hyprland = {
+      compositors.hyprland = {
         enable = true;
         shell = "ashell";
       };
-      environments.niri.enable = true;
-      environments.gnome.enable = true;
-      environments.kde.enable = true;
       greeter = "tuigreet";
     };
   };

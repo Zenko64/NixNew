@@ -2,17 +2,19 @@
 { pkgs, ... }:
 {
   programs = {
-    fish.enable = true;
-  
-    gamescope.enable = true;
+    nix-ld.enable = true;
+
+    gamescope = {
+      enable = true;
+      capSysNice = true;
+    };
     steam.gamescopeSession.enable = true;
     steam.enable = true;
-    };
+  };
 
   services = {
-    asusd.enable = true;
     ollama = {
-      enable = false;
+      enable = true;
       package = pkgs.ollama-cuda;
     };
   };

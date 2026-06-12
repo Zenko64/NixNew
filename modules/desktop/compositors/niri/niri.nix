@@ -11,7 +11,7 @@ in
       ...
     }:
     {
-      options.${namespace}.desktop.environments.niri = {
+      options.${namespace}.desktop.compositors.niri = {
         enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
@@ -24,7 +24,7 @@ in
         };
       };
 
-      config = lib.mkIf config.${namespace}.desktop.environments.niri.enable {
+      config = lib.mkIf config.${namespace}.desktop.compositors.niri.enable {
         programs.niri = {
           enable = true;
           useNautilus = true;
@@ -40,15 +40,15 @@ in
       ...
     }:
     {
-      options.${namespace}.desktop.environments.niri = {
+      options.${namespace}.desktop.compositors.niri = {
         shell = lib.mkOption {
           type = lib.types.nullOr (lib.types.enum shells);
-          default = osConfig.${namespace}.desktop.environments.niri.shell;
+          default = osConfig.${namespace}.desktop.compositors.niri.shell;
           description = "Niri Shell To Use.";
         };
       };
 
-      config = lib.mkIf osConfig.${namespace}.desktop.environments.niri.enable {
+      config = lib.mkIf osConfig.${namespace}.desktop.compositors.niri.enable {
       };
     };
 

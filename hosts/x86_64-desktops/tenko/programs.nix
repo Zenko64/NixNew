@@ -4,7 +4,10 @@
   programs = {
     nix-ld.enable = true;
     
-    gamescope.enable = true;
+    gamescope = {
+      enable = true;
+      capSysNice = true;
+    };
     steam.gamescopeSession.enable = true;
     steam.enable = true;
   };
