@@ -24,15 +24,18 @@
             services = {
               mako.enable = true;
               elephant.enable = true;
-              walker = {
-                enable = true;
-                enableElephantIntegration = true;
-                systemd.enable = true;
-              };
+              walker.enable = true;
             };
 
             # Binds
             wayland.windowManager.hyprland.settings = {
+              exec-once = [
+                "uwsm app -- ${lib.getExe pkgs.ashell}"
+                "uwsm app -- ${lib.getExe pkgs.mako}"
+                "uwsm app -- ${lib.getExe pkgs.elephant}"
+                "uwsm app -- ${lib.getExe pkgs.walker} --gapplication-service"
+              ];
+              
               bind = [
                 "SUPER, R, exec, ${lib.getExe pkgs.walker}"
               ];
@@ -41,6 +44,7 @@
                 "ignore_alpha 0, match:namespace ashell-main-layer"
               ];
             };
+
             programs.ashell = {
               enable = true;
               systemd.enable = true;
