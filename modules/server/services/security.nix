@@ -15,7 +15,6 @@
           enable = true;
           rules = [
             "-w /run/current-system -p wa -k nixos-config"
-            "-w /var/lib/secrets -p wa -k secrets"
           ];
         };
       };
